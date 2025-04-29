@@ -7,6 +7,7 @@ const StripePayment = require('./models/stripePayment.model');
 
 // Import express
 const express = require('express');
+require('dotenv').config();
 
 // Import cors
 const cors = require('cors');
@@ -22,6 +23,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 // Import routes
+const videoCallRoutes = require('./routes/videoCall.routes');
 const checkupBenefitsRoutes = require('./routes/checkupBenefits');
 const checkupPackagesRoutes = require('./routes/checkupPackages');
 const labAppointmentsRoutes = require('./routes/labAppointments');
@@ -47,13 +49,14 @@ const workingHoursRoutes = require('./routes/workingHoursRoutes');
 const walletRoutes = require('./routes/wallet.routes');
 const enhancedWalletRoutes = require('./routes/enhanced-wallet.routes');
 const stripeRoutes = require('./routes/stripe.routes');
+const notifyDoctorRoutes = require('./routes/notifyDoctor.routes');
 const app = express();
 
+// const PORT = process.env.PORT || 3000;
 const PORT = process.env.PORT || 3000;
-
 // CORS Configuration
 app.use(cors({
-    origin: ['http://172.16.13.138:3000','http://localhost:8083', 'http://localhost:8082','https://healthoasis-website.vercel.app'],
+    origin: ['http://localhost:3000','https://healthoasis.vercel.app','http://localhost:8082','http://localhost:8083','http://localhost:8087','http://localhost:8085','http://172.16.13.100:8087','https://healthoasis-website.vercel.app'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
@@ -124,6 +127,7 @@ app.use('/api/vaccination-services', vaccinationServicesRoutes);
 app.use('/api/vaccines', vaccinesRoutes);
 app.use('/api/emergency-services', emergencyServicesRoutes);
 app.use('/api/doctor-department', doctorDepartmentRoutes);
+app.use('/api/notify-doctor', notifyDoctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/doctors', doctorRoutes);
 // Removed: app.use('/api/patients', patientRoutes);
@@ -135,6 +139,7 @@ app.use('/api/working-hours', workingHoursRoutes);
 // app.use('/api/samples', sampleRoutes);
 app.use('/api/wallet', enhancedWalletRoutes); // Using enhanced wallet routes
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/video-calls', videoCallRoutes);
 
 // Root route
 app.get('/', (req, res) => {

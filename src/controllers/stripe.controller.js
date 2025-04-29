@@ -30,6 +30,20 @@ module.exports = {
         metadata: { email, amount }
       });
 
+      // Record checkout session creation
+      await StripePayment.create({
+        stripe_event_id: session.id,
+        stripe_object_id: session.id,
+        event_type: 'checkout.session.created',
+        amount: session.metadata.amount ? parseFloat(session.metadata.amount) : 0,
+        currency: session.currency || 'usd',
+        status: session.payment_status || 'open',
+        customer_email: session.customer_email,
+        patient_email: session.metadata.email,
+        metadata: session.metadata || {},
+        rawData: JSON.stringify(session)
+      });
+
       res.json({ url: session.url, sessionId: session.id });
     } catch (error) {
       console.error('Error in createCheckoutSession:', error);

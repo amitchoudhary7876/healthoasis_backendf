@@ -10,15 +10,12 @@ const StripePayment = sequelize.define('StripePayment', {
   },
   stripe_event_id: {
     type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-    field: 'stripe_event_id'
+    allowNull: false
   },
   stripe_object_id: {
     type: DataTypes.STRING,
     allowNull: false,
-    comment: 'Session ID, Payment Intent ID, etc.',
-    field: 'stripe_object_id'
+    comment: 'Session ID, Payment Intent ID, etc.'
   },
   event_type: {
     type: DataTypes.STRING,
@@ -70,17 +67,7 @@ const StripePayment = sequelize.define('StripePayment', {
   }
 }, {
   tableName: 'stripe_payments',
-  timestamps: true,
-  indexes: [
-    {
-      fields: ['patient_email'],
-      name: 'idx_stripe_payments_patient_email'
-    },
-    {
-      fields: ['stripe_object_id'],
-      name: 'idx_stripe_payments_object_id'
-    }
-  ]
+  timestamps: true
 });
 
 module.exports = StripePayment;
