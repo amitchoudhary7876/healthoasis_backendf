@@ -140,6 +140,7 @@ app.use('/api/working-hours', workingHoursRoutes);
 app.use('/api/wallet', enhancedWalletRoutes); // Using enhanced wallet routes
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/video-calls', videoCallRoutes);
+app.use('/api/notify-doctor', notifyDoctorRoutes);
 
 // Root route
 app.get('/', (req, res) => {

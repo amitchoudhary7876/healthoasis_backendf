@@ -15,6 +15,11 @@ const VideoCall = sequelize.define('VideoCall', {
     type: DataTypes.INTEGER,
     allowNull: true, // Allow null if we don't have patient authentication yet
   },
+  roomId: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+  },
   startTime: {
     type: DataTypes.DATE,
     allowNull: false,
@@ -25,6 +30,14 @@ const VideoCall = sequelize.define('VideoCall', {
   },
   duration: {
     type: DataTypes.INTEGER, // Duration in seconds
+    allowNull: true,
+  },
+  scheduledTime: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  initiatedBy: {
+    type: DataTypes.ENUM('doctor', 'patient'),
     allowNull: true,
   },
   status: {
