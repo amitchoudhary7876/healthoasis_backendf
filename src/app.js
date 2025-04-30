@@ -56,7 +56,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 // CORS Configuration
 app.use(cors({
-    origin: ['http://localhost:3000','https://healthoasis.vercel.app','http://localhost:8082','http://localhost:8083','http://localhost:8087','http://localhost:8085','http://172.16.13.100:8087','https://healthoasis-website.vercel.app'],
+    origin: ['http://localhost:3000','','http://localhost:8082','http://localhost:8083','http://localhost:8087','http://localhost:8085','http://172.16.13.100:8087','https://healthoasis.vercel.app/'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
