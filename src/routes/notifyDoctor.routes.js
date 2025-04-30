@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { sendMail } = require('../utils');
 require('dotenv').config();
-const videoCallUrl = process.env.VIDEO_CALL_URL;
+// Use a fallback URL if the environment variable is not set
+const videoCallUrl = process.env.VIDEO_CALL_URL || 'https://healthoasis-pc6bigdw7-amitchoudhary7876s-projects.vercel.app';
 
 // POST /api/notify-doctor
 router.post('/', async (req, res) => {

@@ -1,6 +1,7 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
-const videoCallUrl = process.env.VIDEO_CALL_URL;
+// Use a fallback URL if the environment variable is not set
+const videoCallUrl = process.env.VIDEO_CALL_URL || 'https://healthoasis-pc6bigdw7-amitchoudhary7876s-projects.vercel.app';
 // SMTP config for 172.16.13.100
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
