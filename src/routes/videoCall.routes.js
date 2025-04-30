@@ -39,32 +39,63 @@ router.post('/', async (req, res) => {
 // End a video call session
 router.post('/end', async (req, res) => {
   try {
-    const { doctorId, patientId, endTime, duration } = req.body;
+    console.log('Received request to end video call:', req.body);
+    const { roomId, endTime, duration } = req.body;
     
-    // Find the active call for the doctor and patient
-    const videoCall = await VideoCall.findOne({
-      where: {
-        doctorId,
-        ...(patientId && { patientId }),
-        status: 'in-progress',
-      },
-      order: [['startTime', 'DESC']]
-    });
+    if (!roomId) {
+      console.error('Missing roomId in end call request');
+      return res.status(400).json({ success: false, message: 'Room ID is required.' });
+    }
+    
+    // Find the video call by roomId
+    const videoCall = await VideoCall.findOne({ where: { roomId } });
     
     if (!videoCall) {
-      return res.status(404).json({ message: 'No active video call found' });
+      console.warn(`Video call with roomId ${roomId} not found`);
+      // Create a record anyway to ensure we have a record of the call
+      try {
+        const newVideoCall = await VideoCall.create({
+          roomId,
+          startTime: new Date(Date.now() - (duration * 1000) || 0),
+          endTime: endTime || new Date(),
+          duration: duration || 0,
+          status: 'completed',
+          doctorId: 1, // Default doctor ID
+          initiatedBy: 'unknown'
+        });
+        console.log(`Created new video call record for ended call: ${newVideoCall.id}`);
+        return res.status(201).json({ 
+          success: true, 
+          message: 'Video call record created and marked as completed.', 
+          videoCallId: newVideoCall.id 
+        });
+      } catch (createErr) {
+        console.error('Error creating video call record:', createErr);
+        return res.status(500).json({ success: false, message: 'Failed to create video call record.' });
+      }
     }
     
     // Update the video call record
     videoCall.endTime = endTime || new Date();
-    videoCall.duration = duration || Math.floor((new Date() - videoCall.startTime) / 1000);
+    videoCall.duration = duration || 0;
     videoCall.status = 'completed';
-    await videoCall.save();
     
-    res.status(200).json(videoCall);
-  } catch (error) {
-    console.error('Error ending video call:', error);
-    res.status(500).json({ message: 'Failed to end video call session', error: error.message });
+    await videoCall.save();
+    console.log(`Video call ${videoCall.id} marked as completed`);
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'Video call ended successfully.',
+      videoCallId: videoCall.id
+    });
+  } catch (err) {
+    console.error('Error ending video call:', err);
+    // Provide more specific error messages
+    let errorMessage = 'Failed to end video call.';
+    if (err.name === 'SequelizeValidationError') {
+      errorMessage = 'Invalid data provided for ending video call.';
+    }
+    res.status(500).json({ success: false, message: errorMessage, error: err.message });
   }
 });
 

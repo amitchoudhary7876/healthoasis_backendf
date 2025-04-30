@@ -56,8 +56,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 // CORS Configuration
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://172.16.13.100:8087',
-      'https://healthoasis-kd3d-24mr60a1j-amitchoudhary7876s-projects.vercel.app', 'https://healthoasis-kd3d-24mr60a1j-amitchoudhary7876s-projects.vercel.app', 'https://healthoasis-kd3d.vercel.app'
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:8085',
+      'http://127.0.0.1:8085',
+      'http://172.16.13.100:8087',
+      'https://healthoasis-kd3d-24mr60a1j-amitchoudhary7876s-projects.vercel.app',
+      'https://healthoasis-kd3d.vercel.app'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -236,7 +241,8 @@ sequelize
         return setupWalletTables();
     })
     .then(() => {
-        return sequelize.sync({ force: false }); // Sync all models
+        // Sync all models and alter tables to match models (add new columns)
+        return sequelize.sync({ alter: true });
     })
     .then(() => {
         console.log('All database tables synchronized successfully');

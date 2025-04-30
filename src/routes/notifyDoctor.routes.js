@@ -5,29 +5,46 @@ const { sendMail } = require('../utils');
 const VideoCall = require('../models/videoCall.model');
 require('dotenv').config();
 // Use the deployed Vercel frontend URL for video calls
-const videoCallUrl = 'https://healthoasis-pc6bigdw7-amitchoudhary7876s-projects.vercel.app';
+const videoCallUrl = process.env.FRONTEND_URL || 'https://healthoasis-kd3d.vercel.app';
+console.log(`Using frontend URL for video calls: ${videoCallUrl}`);
 
 // POST /api/notify-doctor - Send video call invitation with ZegoCloud room ID
 router.post('/', async (req, res) => {
   try {
+    console.log('Received notify-doctor request:', req.body);
     const { doctorEmail, doctorName, patientName, doctorId, patientId } = req.body;
+    
+    // Validate required fields
+    if (!doctorEmail) {
+      return res.status(400).json({ success: false, message: 'Doctor email is required' });
+    }
+    if (!doctorName) {
+      return res.status(400).json({ success: false, message: 'Doctor name is required' });
+    }
+    if (!doctorId) {
+      return res.status(400).json({ success: false, message: 'Doctor ID is required' });
+    }
     
     // Generate a unique room ID for ZegoCloud
     const roomId = uuidv4();
+    console.log(`Generated room ID: ${roomId}`);
     
     // Create a video call record in the database
     const videoCall = await VideoCall.create({
       doctorId,
-      patientId,
+      patientId: patientId || null,
       roomId,
       startTime: new Date(),
       status: 'in-progress',
       initiatedBy: 'patient'
     });
+    console.log(`Created video call record with ID: ${videoCall.id}`);
     
     // Generate the video call URL with the room ID
     const callLink = `${videoCallUrl}/video-call/${roomId}`;
+    console.log(`Generated call link: ${callLink}`);
     
+    // Send email notification
     await sendMail({
       to: doctorEmail,
       subject: `Video Call Request from ${patientName}`,
@@ -57,8 +74,24 @@ router.post('/', async (req, res) => {
       callLink
     });
   } catch (err) {
-    console.error('Error sending doctor email:', err);
-    res.status(500).json({ success: false, message: 'Failed to send doctor email.' });
+    console.error('Error in notify-doctor route:', err);
+    
+    // Provide more specific error messages based on the error type
+    let errorMessage = 'Failed to send doctor email.';
+    if (err.name === 'SequelizeValidationError') {
+      errorMessage = 'Invalid data provided for video call creation.';
+      console.error('Validation errors:', err.errors);
+    } else if (err.name === 'SequelizeUniqueConstraintError') {
+      errorMessage = 'A video call with this room ID already exists.';
+    } else if (err.code === 'EAUTH' || err.code === 'ESOCKET') {
+      errorMessage = 'Email server configuration error. Please contact support.';
+    }
+    
+    res.status(500).json({ 
+      success: false, 
+      message: errorMessage,
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
 });
 
