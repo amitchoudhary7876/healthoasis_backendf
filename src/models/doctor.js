@@ -23,6 +23,10 @@ const Doctor = sequelize.define('Doctor', {
   },
   profile_image_url: {
     type: DataTypes.STRING(255),
+  },
+  availability_status: {
+    type: DataTypes.ENUM('available', 'busy', 'offline'),
+    defaultValue: 'available'
   }
 }, {
   tableName: 'doctors',

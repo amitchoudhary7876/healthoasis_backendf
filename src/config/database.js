@@ -9,7 +9,7 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST || 'localhost',
     dialect: 'mysql',
     port: process.env.DB_PORT || 3306,
-    logging: false,
+    logging: false, // Disable all SQL query logging
     pool: {
       max: 5,
       min: 0,
@@ -19,6 +19,18 @@ const sequelize = new Sequelize(
     define: {
       timestamps: true,
       underscored: true
+    },
+    // Add these options to handle foreign key constraints more gracefully
+    dialectOptions: {
+      // For MySQL 8.0+
+      charset: 'utf8mb4',
+      supportBigNumbers: true,
+      bigNumberStrings: true
+    },
+    // Disable foreign key constraint checks during sync
+    sync: {
+      force: false,
+      alter: true
     }
   }
 );

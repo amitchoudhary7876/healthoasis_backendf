@@ -9,23 +9,23 @@ require('./models');
 
 async function setupTables() {
   try {
-    console.log('Connecting to database...');
+    
     await sequelize.authenticate();
-    console.log('Database connection established successfully.');
+    
 
-    console.log('Syncing wallet tables...');
+    
     
     // Sync specific wallet models
     await AdminWallet.sync({ alter: true });
-    console.log('AdminWallet table synchronized');
+    
     
     await DoctorWallet.sync({ alter: true });
-    console.log('DoctorWallet table synchronized');
+    
     
     await PatientWallet.sync({ alter: true });
-    console.log('PatientWallet table synchronized');
+    
 
-    console.log('All wallet tables have been synchronized successfully.');
+    
     
     // Create default admin wallet if it doesn't exist
     const adminWallet = await AdminWallet.findOne({ where: { id: 1 } });
@@ -35,10 +35,10 @@ async function setupTables() {
         balance: 0,
         transactions: []
       });
-      console.log('Default admin wallet created');
+      
     }
 
-    console.log('Database setup completed successfully!');
+    
     process.exit(0);
   } catch (error) {
     console.error('Error setting up database tables:', error);

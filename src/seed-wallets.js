@@ -8,7 +8,7 @@ const Transaction = require('./wallet/transaction.model');
 async function seedWallets() {
   try {
     await sequelize.authenticate();
-    console.log('Connected to DB. Seeding wallets...');
+    
 
     // Admin Wallet
     await AdminWallet.upsert({
@@ -150,7 +150,7 @@ async function seedWallets() {
       }
     ], { ignoreDuplicates: true });
 
-    console.log('Dummy wallet data seeded successfully!');
+    
     process.exit(0);
   } catch (error) {
     console.error('Error seeding wallet data:', error);

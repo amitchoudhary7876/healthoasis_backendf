@@ -10,13 +10,11 @@ const LabAppointment = sequelize.define('LabAppointment', {
         autoIncrement: true,
         primaryKey: true
     },
+    // Simplified user_id field without explicit foreign key constraints
+    // The association will be handled by the belongsTo below
     user_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: User,
-            key: 'id'
-        }
+        allowNull: false
     },
     test_id: {
         type: DataTypes.INTEGER,

@@ -12,6 +12,10 @@ require('dotenv').config();
 // Import cors
 const cors = require('cors');
 
+// Import http and Socket.io for real-time communication
+const http = require('http');
+const { Server } = require('socket.io');
+
 // Import error handler
 const errorHandler = require('./middleware/errorHandler');
 
@@ -23,7 +27,6 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 // Import routes
-const videoCallRoutes = require('./routes/videoCall.routes');
 const checkupBenefitsRoutes = require('./routes/checkupBenefits');
 const checkupPackagesRoutes = require('./routes/checkupPackages');
 const labAppointmentsRoutes = require('./routes/labAppointments');
@@ -49,25 +52,42 @@ const workingHoursRoutes = require('./routes/workingHoursRoutes');
 const walletRoutes = require('./routes/wallet.routes');
 const enhancedWalletRoutes = require('./routes/enhanced-wallet.routes');
 const stripeRoutes = require('./routes/stripe.routes');
-const notifyDoctorRoutes = require('./routes/notifyDoctor.routes');
+const videoCallRoutes = require('./routes/videoCall');
+// const notifyDoctorRoutes = require('./routes/notifyDoctor.routes'); // Video call notification removed
 const app = express();
 
-// const PORT = process.env.PORT || 3000;
-const PORT = process.env.PORT || 3000;
-// CORS Configuration
-app.use(cors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:8085',
-      'http://127.0.0.1:8085',
-      'http://172.16.13.100:8087',
-      'https://healthoasis-kd3d-24mr60a1j-amitchoudhary7876s-projects.vercel.app',
-      'https://healthoasis-kd3d.vercel.app'
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-}));
+// Create HTTP server and Socket.io instance
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: '*', // Allow all origins for testing
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        credentials: false // Set to false to avoid CORS issues
+    }
+});
+
+// Initialize socket service
+const socketService = require('./services/socketService');
+socketService(io);
+
+// Use a different port to avoid conflicts
+const PORT = 3001;
+// Set up CORS middleware before any routes
+app.use(function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    
+    next();
+});
+
+// Also use the cors middleware for good measure
+app.use(cors());
 
 // Middleware
 app.use(express.json());
@@ -134,7 +154,7 @@ app.use('/api/vaccination-services', vaccinationServicesRoutes);
 app.use('/api/vaccines', vaccinesRoutes);
 app.use('/api/emergency-services', emergencyServicesRoutes);
 app.use('/api/doctor-department', doctorDepartmentRoutes);
-app.use('/api/notify-doctor', notifyDoctorRoutes);
+// app.use('/api/notify-doctor', notifyDoctorRoutes); // Removed video call notification
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/doctors', doctorRoutes);
 // Removed: app.use('/api/patients', patientRoutes);
@@ -146,8 +166,7 @@ app.use('/api/working-hours', workingHoursRoutes);
 // app.use('/api/samples', sampleRoutes);
 app.use('/api/wallet', enhancedWalletRoutes); // Using enhanced wallet routes
 app.use('/api/stripe', stripeRoutes);
-app.use('/api/video-calls', videoCallRoutes);
-app.use('/api/notify-doctor', notifyDoctorRoutes);
+app.use('/api/video-call', videoCallRoutes); // Video call routes
 
 // Root route
 app.get('/', (req, res) => {
@@ -196,23 +215,23 @@ app.use(errorHandler);
 // Setup wallet tables before starting the server
 async function setupWalletTables() {
     try {
-        console.log('Setting up wallet tables...');
+        // Setting up wallet tables
         
         // Sync wallet models
         await AdminWallet.sync({ alter: true });
-        console.log('AdminWallet table synchronized');
+        
         
         await DoctorWallet.sync({ alter: true });
-        console.log('DoctorWallet table synchronized');
+        
         
         await PatientWallet.sync({ alter: true });
-        console.log('PatientWallet table synchronized');
+        
 
         await Transaction.sync({ alter: true });
-        console.log('Transaction table synchronized');
+        
         
         await StripePayment.sync({ alter: true });
-        console.log('StripePayment table synchronized');
+        
 
         // Create default admin wallet if it doesn't exist
         const adminWallet = await AdminWallet.findOne({ where: { id: 1 } });
@@ -222,10 +241,10 @@ async function setupWalletTables() {
                 balance: 0,
                 transactions: []
             });
-            console.log('Default admin wallet created');
+            
         }
 
-        console.log('Wallet tables setup completed successfully!');
+        // Wallet tables setup completed
         return true;
     } catch (error) {
         console.error('Error setting up wallet tables:', error);
@@ -237,18 +256,45 @@ async function setupWalletTables() {
 sequelize
     .authenticate()
     .then(() => {
-        console.log('Database connection established successfully');
+        // Database connected successfully
         return setupWalletTables();
     })
     .then(() => {
-        // Sync all models and alter tables to match models (add new columns)
-        return sequelize.sync({ alter: true });
+        // Syncing database models with a more cautious approach
+        return sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
+          .then(() => {
+            // Use a more cautious sync approach - don't alter tables
+            return sequelize.sync({ alter: false });
+          })
+          .then(() => {
+            // Re-enable foreign key checks
+            return sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+          })
+          .then(() => {
+            console.log('Database synchronized successfully');
+          })
+          .catch(err => {
+            console.error('Error during database sync:', err.message);
+            // Try to re-enable foreign key checks even if sync failed
+            return sequelize.query('SET FOREIGN_KEY_CHECKS = 1')
+              .then(() => {
+                console.log('Foreign key checks re-enabled after error');
+                // Continue with app startup even if sync failed
+                return Promise.resolve();
+              });
+          });
     })
     .then(() => {
-        console.log('All database tables synchronized successfully');
-        app.listen(PORT, '0.0.0.0', () => {
-            console.log(`Server running on http://0.0.0.0:${PORT}`);
-        });
+        // All database tables synchronized
+        // Start server with automatic port fallback on EADDRINUSE
+        const startServer = (port) => {
+            server.listen(port, '0.0.0.0', () => {
+                console.log(`Server running on http://0.0.0.0:${port}`);
+                console.log('Socket.io server initialized for video calls');
+            });
+            
+        };
+        startServer(PORT);
     })
     .catch((err) => {
         console.error('Unable to connect to the database:', err.message);

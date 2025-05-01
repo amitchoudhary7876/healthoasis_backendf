@@ -2,9 +2,17 @@ const Doctor = require('../models/doctor');
 
 exports.getAllDoctors = async (req, res) => {
   try {
+    console.log('Fetching all doctors...');
     const doctors = await Doctor.findAll();
+    console.log(`Found ${doctors.length} doctors`);
+    
+    // Add CORS headers explicitly
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    
     res.json(doctors);
   } catch (error) {
+    console.error('Error fetching doctors:', error);
     res.status(500).json({ message: error.message });
   }
 };
