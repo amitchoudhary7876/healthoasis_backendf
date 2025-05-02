@@ -71,7 +71,7 @@ const socketService = require('./services/socketService');
 socketService(io);
 
 // Use a different port to avoid conflicts
-const PORT = 3001;
+const PORT = parseInt(process.env.PORT, 10) || 3001;
 // Set up CORS middleware before any routes
 app.use(function(req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');

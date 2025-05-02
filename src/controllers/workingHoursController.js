@@ -1,6 +1,9 @@
 const WorkingHours = require('../models/workinghours');
 
 exports.getAllWorkingHours = async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   try {
     const workingHours = await WorkingHours.findAll();
     res.json(workingHours);
@@ -10,6 +13,9 @@ exports.getAllWorkingHours = async (req, res) => {
 };
 
 exports.getWorkingHoursById = async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   try {
     const workingHours = await WorkingHours.findByPk(req.params.id);
     if (!workingHours) {
@@ -22,6 +28,9 @@ exports.getWorkingHoursById = async (req, res) => {
 };
 
 exports.createWorkingHours = async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   try {
     const workingHours = await WorkingHours.create(req.body);
     res.status(201).json(workingHours);
@@ -31,6 +40,9 @@ exports.createWorkingHours = async (req, res) => {
 };
 
 exports.updateWorkingHours = async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   try {
     const workingHours = await WorkingHours.findByPk(req.params.id);
     if (!workingHours) {
@@ -44,6 +56,9 @@ exports.updateWorkingHours = async (req, res) => {
 };
 
 exports.deleteWorkingHours = async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   try {
     const workingHours = await WorkingHours.findByPk(req.params.id);
     if (!workingHours) {

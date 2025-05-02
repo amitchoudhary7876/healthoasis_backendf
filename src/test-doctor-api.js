@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const API_URL = 'http://localhost:3001';
+const API_URL = 'http://localhost:3000';
 
 async function testDoctorAPI() {
   try {

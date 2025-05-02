@@ -1,15 +1,13 @@
 const Doctor = require('../models/doctor');
 
 exports.getAllDoctors = async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   try {
     console.log('Fetching all doctors...');
     const doctors = await Doctor.findAll();
     console.log(`Found ${doctors.length} doctors`);
-    
-    // Add CORS headers explicitly
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    
     res.json(doctors);
   } catch (error) {
     console.error('Error fetching doctors:', error);
@@ -18,6 +16,9 @@ exports.getAllDoctors = async (req, res) => {
 };
 
 exports.getDoctorById = async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   try {
     const doctor = await Doctor.findByPk(req.params.id);
     if (!doctor) {
@@ -30,6 +31,9 @@ exports.getDoctorById = async (req, res) => {
 };
 
 exports.createDoctor = async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   try {
     const doctor = await Doctor.create(req.body);
     res.status(201).json(doctor);
